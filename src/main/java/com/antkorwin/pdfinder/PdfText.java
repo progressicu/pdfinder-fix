@@ -15,9 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.IOUtils;
 
 /**
- * Created on 13/07/2020
- * <p>
- * TODO: replace on the JavaDoc
+ * API to get plain text from a PDF file.
  *
  * @author Korovin Anatoliy
  */
@@ -26,6 +24,9 @@ public class PdfText {
 
 	private final byte[] content;
 
+	/**
+	 * load pdf from file
+	 */
 	public static PdfText fromFile(File file) {
 		try {
 			byte[] content = Files.readAllBytes(file.toPath());
@@ -35,6 +36,9 @@ public class PdfText {
 		}
 	}
 
+	/**
+	 * load pdf from InputStream
+	 */
 	public static PdfText fromInputStream(ThrowableSupplier<InputStream> inputStreamThrowableSupplier) {
 		try (InputStream inputStream = inputStreamThrowableSupplier.get()) {
 			byte[] content = IOUtils.toByteArray(inputStream);
@@ -44,6 +48,9 @@ public class PdfText {
 		}
 	}
 
+	/**
+	 * extract all text from the pdf file
+	 */
 	public String extract() {
 
 		try (ByteArrayInputStream inputStream = new ByteArrayInputStream(content);

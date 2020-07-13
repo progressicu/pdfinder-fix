@@ -12,6 +12,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+
+/**
+ * Entry point into the API to search text position in pdf files
+ *
+ * @author Korovin Anatoliy
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class PdfFind {
@@ -25,16 +31,26 @@ public class PdfFind {
 	private int threshold = DEFAULT_THRESHOLD;
 	private Boundary boundary;
 
+	/**
+	 * the minimal distance between two text blocks,
+	 * to join in single text token
+	 */
 	public PdfFind threshold(int threshold) {
 		this.threshold = threshold;
 		return this;
 	}
 
+	/**
+	 * set the boundary to search text only in this area
+	 */
 	public PdfFind boundary(Boundary boundary) {
 		this.boundary = boundary;
 		return this;
 	}
 
+	/**
+	 * search all text tokens matched to searchString
+	 */
 	public PdfFindResult search(String searchString) {
 
 		PdfFindResult result = new PdfFindResult();
@@ -44,6 +60,7 @@ public class PdfFind {
 			searchInDocument(pdfDoc, searchString, result);
 		} catch (Exception e) {
 			log.error("Error while search text in PDF file", e);
+			throw new PdfFindInternalException(e);
 		}
 		return result;
 	}

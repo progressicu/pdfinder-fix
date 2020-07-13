@@ -7,7 +7,7 @@ import lombok.Data;
 /**
  * Created on 13/07/2020
  * <p>
- * TODO: replace on the JavaDoc
+ * Boundary to search text in selected area
  *
  * @author Korovin Anatoliy
  */
@@ -24,9 +24,9 @@ public class Boundary {
 
 	//@formatter:off
 	/*
-	 * Проверяем входит ли точка в boundary,
-	 * координаты проецируются следующим образом:
-	 * <p>
+	 * Check that point is in boundary.
+	 * Axis orientation in PDF:
+	 *
 	 * y
 	 * ^
 	 * 890

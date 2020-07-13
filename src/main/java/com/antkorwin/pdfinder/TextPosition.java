@@ -9,7 +9,7 @@ import lombok.Data;
 /**
  * Created on 10/07/2020
  * <p>
- * TODO: replace on the JavaDoc
+ * Describe a position of text token in the PDF file.
  *
  * @author Korovin Anatoliy
  */

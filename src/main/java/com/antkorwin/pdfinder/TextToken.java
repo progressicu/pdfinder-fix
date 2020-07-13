@@ -6,6 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 
 
+/**
+ * Text block from PDF file,
+ * describes position, source page and content.
+ *
+ * @author Korovin Anatoliy
+ */
 @Data
 @Builder
 @AllArgsConstructor

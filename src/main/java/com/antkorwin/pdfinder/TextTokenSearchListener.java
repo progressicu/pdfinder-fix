@@ -20,6 +20,11 @@ import lombok.RequiredArgsConstructor;
 import static com.itextpdf.kernel.pdf.canvas.parser.EventType.RENDER_TEXT;
 
 
+/**
+ * iText event listener to search tokens in PDF file.
+ *
+ * @author Korovin Anatoliy
+ */
 @RequiredArgsConstructor
 public class TextTokenSearchListener implements IEventListener {
 
@@ -73,7 +78,8 @@ public class TextTokenSearchListener implements IEventListener {
 	private float getDistanceBetween(TextToken firstToken, TextToken secondToken) {
 
 		if (firstToken.isEmptyToken() || secondToken.isEmptyToken()) {
-			// нет смыла вычислять растояние если у нас слева или справа нету токена
+			// it makes no sense to estimate the distance
+			// if we have an empty token on the left or on the right.
 			return 0;
 		}
 
@@ -94,7 +100,9 @@ public class TextTokenSearchListener implements IEventListener {
 		return tokens.get(tokens.size() - 1);
 	}
 
-
+	/**
+	 * find tokens by search string
+	 */
 	public List<TextToken> findTokens(String text) {
 		List<TextToken> result = new ArrayList<>();
 
@@ -108,6 +116,9 @@ public class TextTokenSearchListener implements IEventListener {
 		return result;
 	}
 
+	/**
+	 * find tokens by search string in boundary
+	 */
 	public List<TextToken> findTokensInBoundary(String text, Boundary boundary) {
 
 		List<TextToken> result = new ArrayList<>();

@@ -9,6 +9,11 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import lombok.Getter;
 
+/**
+ * The result of searching in pdf file.
+ *
+ * @author Korovin Anatoliy
+ */
 public class PdfFindResult {
 
 	@Getter
@@ -20,6 +25,9 @@ public class PdfFindResult {
 		return this;
 	}
 
+	/**
+	 * get first found token, from the beginning of a document
+	 */
 	public Optional<TextToken> getFirstToken() {
 
 		if (tokensByPageMap == null) {
@@ -39,26 +47,9 @@ public class PdfFindResult {
 		return Optional.of(tokensFromFirstPage.get(tokensFromFirstPage.size() - 1));
 	}
 
-	public TextToken getFirstToken_() {
-
-		if (tokensByPageMap == null) {
-			throw new PdfFindInternalException("call search(String) before try to retrieve a result.");
-		}
-
-		Optional<Integer> firstPageWithToken = tokensByPageMap.keySet()
-		                                                      .stream()
-		                                                      .sorted()
-		                                                      .findFirst();
-
-		if (!firstPageWithToken.isPresent()) {
-			return TextToken.EMPTY_TOKEN;
-		}
-
-		List<TextToken> tokensFromFirstPage = tokensByPageMap.get(firstPageWithToken.get());
-		return tokensFromFirstPage.get(tokensFromFirstPage.size() - 1);
-	}
-
-
+	/**
+	 * get last found token
+	 */
 	public Optional<TextToken> getLastToken() {
 		if (tokensByPageMap == null) {
 			throw new PdfFindInternalException("call search(String) before try to retrieve a result.");
@@ -76,33 +67,19 @@ public class PdfFindResult {
 		return Optional.of(tokensFromLastPage.get(0));
 	}
 
-	public TextToken getLastToken_() {
-		if (tokensByPageMap == null) {
-			throw new PdfFindInternalException("call search(String) before try to retrieve a result.");
-		}
-
-		Optional<Integer> lastPage = tokensByPageMap.keySet()
-		                                            .stream()
-		                                            .min(Collections.reverseOrder());
-
-		if (!lastPage.isPresent()) {
-			return TextToken.EMPTY_TOKEN;
-		}
-
-		List<TextToken> tokensFromLastPage = tokensByPageMap.get(lastPage.get());
-		return tokensFromLastPage.get(0);
-	}
-
+	/**
+	 * get all found tokens from selected page
+	 */
 	public List<TextToken> getTokensFromPage(int pageNumber) {
 		return tokensByPageMap.get(pageNumber);
 	}
 
-
+	/**
+	 * total count of found tokens
+	 */
 	public long countOfTokens() {
 		AtomicLong count = new AtomicLong(0);
-		tokensByPageMap.forEach((k, v) -> {
-			count.addAndGet(v.size());
-		});
+		tokensByPageMap.forEach((k, v) -> count.addAndGet(v.size()));
 		return count.get();
 	}
 }
