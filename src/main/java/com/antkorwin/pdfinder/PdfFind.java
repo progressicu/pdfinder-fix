@@ -3,14 +3,12 @@ package com.antkorwin.pdfinder;
 import java.io.File;
 import java.util.List;
 
-import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.canvas.parser.PdfCanvasProcessor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 
 /**
@@ -30,6 +28,7 @@ public class PdfFind {
 	private final File file;
 	private int threshold = DEFAULT_THRESHOLD;
 	private Boundary boundary;
+	private boolean caseSensitive = true;
 
 	/**
 	 * the minimal distance between two text blocks,
@@ -45,6 +44,15 @@ public class PdfFind {
 	 */
 	public PdfFind boundary(Boundary boundary) {
 		this.boundary = boundary;
+		return this;
+	}
+
+	/**
+	 * set to false if you need to find text without case sensitive,
+	 * (true by default)
+	 */
+	public PdfFind caseSensitive(boolean caseSensitive) {
+		this.caseSensitive = caseSensitive;
 		return this;
 	}
 
@@ -76,7 +84,10 @@ public class PdfFind {
 	}
 
 	private List<TextToken> getTokensFromPage(PdfPage page, int pageNumber, String searchString) {
-		TextTokenSearchListener listener = new TextTokenSearchListener(pageNumber, threshold);
+
+		TextTokenSearchListener listener = new TextTokenSearchListener(pageNumber,
+		                                                               threshold,
+		                                                               caseSensitive);
 		new PdfCanvasProcessor(listener).processPageContent(page);
 		if (boundary != null) {
 			return listener.findTokensInBoundary(searchString, boundary);
