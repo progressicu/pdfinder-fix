@@ -55,4 +55,31 @@ class PdfFindTest {
 		assertThat(result.getFirstToken()).isEmpty();
 		assertThat(result.getLastToken()).isEmpty();
 	}
+
+	@Test
+	void caseSensitive() {
+		// Arrange
+		File file = new File(getClass().getClassLoader()
+		                               .getResource("junit5_manual.pdf")
+		                               .getFile());
+		// Act
+		PdfFindResult result = new PdfFind(file).threshold(10)
+		                                        .search("Junit");
+		// Assert
+		assertThat(result.countOfTokens()).isEqualTo(0);
+	}
+
+	@Test
+	void caseInsensitive() {
+		// Arrange
+		File file = new File(getClass().getClassLoader()
+		                               .getResource("junit5_manual.pdf")
+		                               .getFile());
+		// Act
+		PdfFindResult result = new PdfFind(file).threshold(10)
+		                                        .caseSensitive(false)
+		                                        .search("Junit");
+		// Assert
+		assertThat(result.countOfTokens()).isEqualTo(810);
+	}
 }

@@ -30,6 +30,7 @@ public class TextTokenSearchListener implements IEventListener {
 
 	private final int pageNumber;
 	private final int threshold;
+	private final boolean caseSensitive;
 
 	@Getter
 	private Map<Float, List<TextToken>> textTokenMap = new HashMap<>();
@@ -110,7 +111,7 @@ public class TextTokenSearchListener implements IEventListener {
 		for (Float key : keys) {
 			List<TextToken> tokens = textTokenMap.get(key);
 			tokens.stream()
-			      .filter(t -> t.getText().contains(text))
+			      .filter(t -> match(t.getText(), text))
 			      .forEach(result::add);
 		}
 		return result;
@@ -126,10 +127,16 @@ public class TextTokenSearchListener implements IEventListener {
 		for (Float key : keys) {
 			List<TextToken> tokens = textTokenMap.get(key);
 			tokens.stream()
-			      .filter(t -> t.getText().contains(text))
+			      .filter(t -> match(t.getText(), text))
 			      .filter(t -> boundary.isInBoundary(t.getPosition()))
 			      .forEach(result::add);
 		}
 		return result;
+	}
+
+	private boolean match(String first, String second) {
+		return this.caseSensitive
+		       ? first.contains(second)
+		       : first.toLowerCase().contains(second.toLowerCase());
 	}
 }
