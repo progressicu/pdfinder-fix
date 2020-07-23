@@ -1,6 +1,8 @@
 package com.antkorwin.pdfinder;
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 
@@ -81,5 +83,64 @@ class PdfFindTest {
 		                                        .search("Junit");
 		// Assert
 		assertThat(result.countOfTokens()).isEqualTo(810);
+	}
+
+
+	@Test
+	void trimSpaceInTokens() {
+		// Arrange
+		File file = new File(getClass().getClassLoader()
+		                               .getResource("space2.pdf")
+		                               .getFile());
+		// Act
+		PdfFindResult result = new PdfFind(file).threshold(10)
+		                                        .caseSensitive(false)
+		                                        .search("Конец");
+		// Assert
+		System.out.println(result.countOfTokens());
+	}
+
+	@Test
+	void trimTabsInTokens() {
+		// Arrange
+		File file = new File(getClass().getClassLoader()
+		                               .getResource("space-test.pdf")
+		                               .getFile());
+		// Act
+		PdfFindResult result = new PdfFind(file).threshold(10)
+		                                        .caseSensitive(false)
+		                                        .search("space");
+		// Assert
+		System.out.println(result.countOfTokens());
+	}
+
+
+	public static void printMatches(String text, String regex) {
+
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(text);
+
+		int startIndex = 0;
+		while (matcher.find()) {
+			if (matcher.start() != 0) {
+				System.out.println("= " + text.substring(startIndex, matcher.start()));
+			}
+			startIndex = matcher.end();
+		}
+
+		if (startIndex < text.length()) {
+			System.out.println("= " + text.substring(startIndex));
+		}
+	}
+
+	@Test
+	void reg() {
+		printMatches("\tewewe\t\tEEEE\trer 0rfkmcd 13123  AAA", "\\s+");
+		System.out.println("=====");
+		printMatches("ewewe\t\tEEEE\trer 0rfkmcd 13123  AAA", "\\s+");
+		System.out.println("=====");
+		printMatches("ewewe\t\tEEEE\trer 0rfkmcd 13123  AAA\t\t", "\\s+");
+		System.out.println("=====");
+		printMatches("\tewewe\t\tEEEE\trer 0rfkmcd 13123  AAA\t\t", "\\s+");
 	}
 }

@@ -10,10 +10,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.pdf.canvas.parser.EventType;
 import com.itextpdf.kernel.pdf.canvas.parser.data.IEventData;
 import com.itextpdf.kernel.pdf.canvas.parser.data.TextRenderInfo;
 import com.itextpdf.kernel.pdf.canvas.parser.listener.IEventListener;
+import com.itextpdf.styledxmlparser.jsoup.helper.StringUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -42,12 +44,42 @@ public class TextTokenSearchListener implements IEventListener {
 		return types;
 	}
 
+	List<TextToken> splitEventOnTokens(TextRenderInfo renderInfo) {
+
+		List<TextToken> result = new ArrayList<>();
+		PdfFont font = renderInfo.getFont();
+		float fontSize = renderInfo.getFontSize();
+		String text = renderInfo.getText();
+
+
+
+		String[] words = text.split("\\s+");
+		for (String word : words) {
+
+			TextPosition position = TextPosition.builder()
+//			                                    .x()
+			                                    .build();
+			TextToken textToken = new TextToken(word, position, pageNumber);
+		}
+
+		return result;
+	}
+
+
 	@Override
 	public void eventOccurred(IEventData iEventData, EventType eventType) {
 
 		TextRenderInfo info = (TextRenderInfo) iEventData;
-		String text = info.getText();
+		String text = info.getText().trim();
 		TextPosition textPosition = TextPosition.fromRenderInfo(info);
+
+		List<TextToken> subTokens = splitEventOnTokens((TextRenderInfo) iEventData);
+
+		subTokens.forEach(t -> {
+			textTokenMap.compute(t.getPosition().getY(), (lineY, tokens) -> {
+				return tokens;
+			});
+		});
 
 		textTokenMap.compute(textPosition.getY(), (lineY, tokens) -> {
 
@@ -56,6 +88,10 @@ public class TextTokenSearchListener implements IEventListener {
 			if (tokens == null) {
 				tokens = new ArrayList<>();
 				return addNewToken(tokens, newToken);
+			}
+
+			if (StringUtil.isBlank(text)) {
+				return tokens;
 			}
 
 			TextToken lastToken = getLastToken(tokens);
