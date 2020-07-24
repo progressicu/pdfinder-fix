@@ -6,16 +6,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import com.antkorwin.pdfinder.find.PdfExtractResult;
+import com.antkorwin.pdfinder.tokenizer.SubToken;
+import com.antkorwin.pdfinder.tokenizer.WhiteSpaceSplitSubTokenStrategy;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.pdf.canvas.parser.EventType;
 import com.itextpdf.kernel.pdf.canvas.parser.data.IEventData;
 import com.itextpdf.kernel.pdf.canvas.parser.data.TextRenderInfo;
 import com.itextpdf.kernel.pdf.canvas.parser.listener.IEventListener;
-import com.itextpdf.styledxmlparser.jsoup.helper.StringUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -32,7 +35,6 @@ public class TextTokenSearchListener implements IEventListener {
 
 	private final int pageNumber;
 	private final int threshold;
-	private final boolean caseSensitive;
 
 	@Getter
 	private Map<Float, List<TextToken>> textTokenMap = new HashMap<>();
@@ -44,67 +46,48 @@ public class TextTokenSearchListener implements IEventListener {
 		return types;
 	}
 
-	List<TextToken> splitEventOnTokens(TextRenderInfo renderInfo) {
-
-		List<TextToken> result = new ArrayList<>();
-		PdfFont font = renderInfo.getFont();
-		float fontSize = renderInfo.getFontSize();
-		String text = renderInfo.getText();
-
-
-
-		String[] words = text.split("\\s+");
-		for (String word : words) {
-
-			TextPosition position = TextPosition.builder()
-//			                                    .x()
-			                                    .build();
-			TextToken textToken = new TextToken(word, position, pageNumber);
-		}
-
-		return result;
-	}
-
-
 	@Override
 	public void eventOccurred(IEventData iEventData, EventType eventType) {
 
 		TextRenderInfo info = (TextRenderInfo) iEventData;
-		String text = info.getText().trim();
+		String text = info.getText();
 		TextPosition textPosition = TextPosition.fromRenderInfo(info);
-
-		List<TextToken> subTokens = splitEventOnTokens((TextRenderInfo) iEventData);
-
-		subTokens.forEach(t -> {
-			textTokenMap.compute(t.getPosition().getY(), (lineY, tokens) -> {
-				return tokens;
-			});
-		});
 
 		textTokenMap.compute(textPosition.getY(), (lineY, tokens) -> {
 
-			TextToken newToken = new TextToken(text, textPosition, pageNumber);
+			TextToken newToken = TextToken.builder()
+			                              .text(text)
+			                              .position(textPosition)
+			                              .pageNumber(pageNumber)
+			                              .font(info.getFont())
+			                              .fontSize(info.getFontSize())
+			                              .build();
 
 			if (tokens == null) {
 				tokens = new ArrayList<>();
 				return addNewToken(tokens, newToken);
 			}
 
-			if (StringUtil.isBlank(text)) {
-				return tokens;
-			}
-
-			TextToken lastToken = getLastToken(tokens);
-			if (getDistanceBetween(lastToken, newToken) < threshold) {
-				lastToken.setText(lastToken.getText() + text);
-				lastToken.getPosition().setWidth(lastToken.getPosition().getWidth() + textPosition.getWidth());
-				lastToken.getPosition().setHeight(lastToken.getPosition().getHeight() + textPosition.getHeight());
+			Optional<TextToken> lastToken = getLastToken(tokens);
+			if (lastToken.isPresent()) {
+				TextToken last = lastToken.get();
+				// todo check the same font and size ?
+				if (getDistanceBetween(last, newToken) < threshold) {
+					last.setText(last.getText() + text);
+					last.getPosition().setWidth(last.getPosition().getWidth() + textPosition.getWidth());
+					last.getPosition().setHeight(last.getPosition().getHeight() + textPosition.getHeight());
+				}
 			} else {
 				addNewToken(tokens, newToken);
+				return tokens;
 			}
 
 			return tokens;
 		});
+	}
+
+	public PdfExtractResult getExtractResult(){
+		return new PdfExtractResult(()->this.textTokenMap);
 	}
 
 	private List<TextToken> addNewToken(List<TextToken> tokens, TextToken token) {
@@ -130,49 +113,10 @@ public class TextTokenSearchListener implements IEventListener {
 	}
 
 
-	private TextToken getLastToken(List<TextToken> tokens) {
+	private Optional<TextToken> getLastToken(List<TextToken> tokens) {
 		if (tokens == null || tokens.size() == 0) {
-			return TextToken.EMPTY_TOKEN;
+			return Optional.empty();
 		}
-		return tokens.get(tokens.size() - 1);
-	}
-
-	/**
-	 * find tokens by search string
-	 */
-	public List<TextToken> findTokens(String text) {
-		List<TextToken> result = new ArrayList<>();
-
-		SortedSet<Float> keys = new TreeSet<>(textTokenMap.keySet());
-		for (Float key : keys) {
-			List<TextToken> tokens = textTokenMap.get(key);
-			tokens.stream()
-			      .filter(t -> match(t.getText(), text))
-			      .forEach(result::add);
-		}
-		return result;
-	}
-
-	/**
-	 * find tokens by search string in boundary
-	 */
-	public List<TextToken> findTokensInBoundary(String text, Boundary boundary) {
-
-		List<TextToken> result = new ArrayList<>();
-		SortedSet<Float> keys = new TreeSet<>(textTokenMap.keySet());
-		for (Float key : keys) {
-			List<TextToken> tokens = textTokenMap.get(key);
-			tokens.stream()
-			      .filter(t -> match(t.getText(), text))
-			      .filter(t -> boundary.isInBoundary(t.getPosition()))
-			      .forEach(result::add);
-		}
-		return result;
-	}
-
-	private boolean match(String first, String second) {
-		return this.caseSensitive
-		       ? first.contains(second)
-		       : first.toLowerCase().contains(second.toLowerCase());
+		return Optional.of(tokens.get(tokens.size() - 1));
 	}
 }

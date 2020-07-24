@@ -3,6 +3,10 @@ package com.antkorwin.pdfinder;
 import java.io.File;
 import java.util.List;
 
+import com.antkorwin.pdfinder.find.FlatSearch;
+import com.antkorwin.pdfinder.find.PdfSearch;
+import com.antkorwin.pdfinder.find.PdfSplitResult;
+import com.antkorwin.pdfinder.tokenizer.WhiteSpaceSplitSubTokenStrategy;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfReader;
@@ -61,19 +65,18 @@ public class PdfFind {
 	 */
 	public PdfFindResult search(String searchString) {
 
-		PdfFindResult result = new PdfFindResult();
 		try (PdfReader reader = new PdfReader(file);
 		     PdfDocument pdfDoc = new PdfDocument(reader)) {
 
-			searchInDocument(pdfDoc, searchString, result);
+			return searchInDocument(pdfDoc, searchString);
 		} catch (Exception e) {
 			log.error("Error while search text in PDF file", e);
 			throw new PdfFindInternalException(e);
 		}
-		return result;
 	}
 
-	private void searchInDocument(PdfDocument pdfDoc, String searchString, PdfFindResult result) {
+	private PdfFindResult searchInDocument(PdfDocument pdfDoc, String searchString) {
+		PdfFindResult result = new PdfFindResult();
 		for (int pageNum = 1; pageNum <= pdfDoc.getNumberOfPages(); pageNum++) {
 			PdfPage page = pdfDoc.getPage(pageNum);
 			List<TextToken> tokensFromPage = getTokensFromPage(page, pageNum, searchString);
@@ -81,18 +84,16 @@ public class PdfFind {
 				result.addResultForPage(pageNum, tokensFromPage);
 			}
 		}
+		return result;
 	}
 
 	private List<TextToken> getTokensFromPage(PdfPage page, int pageNumber, String searchString) {
 
 		TextTokenSearchListener listener = new TextTokenSearchListener(pageNumber,
-		                                                               threshold,
-		                                                               caseSensitive);
+		                                                               threshold);
 		new PdfCanvasProcessor(listener).processPageContent(page);
-		if (boundary != null) {
-			return listener.findTokensInBoundary(searchString, boundary);
-		} else {
-			return listener.findTokens(searchString);
-		}
+		PdfSplitResult split = new PdfSplitResult(listener.getExtractResult(), new WhiteSpaceSplitSubTokenStrategy());
+		PdfSearch search = new PdfSearch(split, searchString, caseSensitive, boundary);
+		return new FlatSearch(search).result();
 	}
 }

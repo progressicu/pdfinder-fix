@@ -114,33 +114,17 @@ class PdfFindTest {
 		System.out.println(result.countOfTokens());
 	}
 
-
-	public static void printMatches(String text, String regex) {
-
-		Pattern pattern = Pattern.compile(regex);
-		Matcher matcher = pattern.matcher(text);
-
-		int startIndex = 0;
-		while (matcher.find()) {
-			if (matcher.start() != 0) {
-				System.out.println("= " + text.substring(startIndex, matcher.start()));
-			}
-			startIndex = matcher.end();
-		}
-
-		if (startIndex < text.length()) {
-			System.out.println("= " + text.substring(startIndex));
-		}
-	}
-
 	@Test
-	void reg() {
-		printMatches("\tewewe\t\tEEEE\trer 0rfkmcd 13123  AAA", "\\s+");
-		System.out.println("=====");
-		printMatches("ewewe\t\tEEEE\trer 0rfkmcd 13123  AAA", "\\s+");
-		System.out.println("=====");
-		printMatches("ewewe\t\tEEEE\trer 0rfkmcd 13123  AAA\t\t", "\\s+");
-		System.out.println("=====");
-		printMatches("\tewewe\t\tEEEE\trer 0rfkmcd 13123  AAA\t\t", "\\s+");
+	void trimTabbbb() {
+		// Arrange
+		File file = new File(getClass().getClassLoader()
+		                               .getResource("bad.pdf")
+		                               .getFile());
+		// Act
+		PdfFindResult result = new PdfFind(file).threshold(10)
+		                                        .caseSensitive(false)
+		                                        .search("Ко");
+		// Assert
+		System.out.println(result.countOfTokens());
 	}
 }
