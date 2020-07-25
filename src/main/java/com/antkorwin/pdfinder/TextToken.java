@@ -27,11 +27,4 @@ public class TextToken {
 
 	private PdfFont font;
 	private float fontSize;
-
-
-	public boolean isEmptyToken() {
-		return this.equals(EMPTY_TOKEN);
-	}
-
-	static TextToken EMPTY_TOKEN = new TextToken();
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import com.antkorwin.pdfinder.find.FlatSearch;
 import com.antkorwin.pdfinder.find.PdfSearch;
 import com.antkorwin.pdfinder.find.PdfSplitResult;
+import com.antkorwin.pdfinder.tokenizer.SplitSubTokenStrategy;
 import com.antkorwin.pdfinder.tokenizer.WhiteSpaceSplitSubTokenStrategy;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
@@ -93,7 +94,8 @@ public class PdfFind {
 		                                                               threshold);
 		new PdfCanvasProcessor(listener).processPageContent(page);
 		PdfSplitResult split = new PdfSplitResult(listener.getExtractResult(), new WhiteSpaceSplitSubTokenStrategy());
-		PdfSearch search = new PdfSearch(split, searchString, caseSensitive, boundary);
+		SplitSubTokenStrategy splitStrategy = new WhiteSpaceSplitSubTokenStrategy();
+		PdfSearch search = new PdfSearch(split, searchString, caseSensitive, boundary, splitStrategy);
 		return new FlatSearch(search).result();
 	}
 }

@@ -31,8 +31,9 @@ public class PdfSplitResult implements OnePageResult {
 	public Map<Float, List<TextToken>> result() {
 
 		Map<Float, List<TextToken>> map = new ConcurrentHashMap<>();
-		pdfExtractResult.result().forEach((k, v) -> {
+		Map<Float, List<TextToken>> extract = pdfExtractResult.result();
 
+		extract.forEach((k, v) -> {
 			List<TextToken> result = new ArrayList<>();
 			for (TextToken token : v) {
 				result.addAll(splitTokens(token));
