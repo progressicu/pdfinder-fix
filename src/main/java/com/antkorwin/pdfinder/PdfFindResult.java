@@ -1,5 +1,6 @@
 package com.antkorwin.pdfinder;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +73,13 @@ public class PdfFindResult {
 	 */
 	public List<TextToken> getTokensFromPage(int pageNumber) {
 		return tokensByPageMap.get(pageNumber);
+	}
+
+
+	public List<TextToken> getAllTokens() {
+		List<TextToken> result = new ArrayList<>();
+		tokensByPageMap.values().forEach(result::addAll);
+		return result;
 	}
 
 	/**

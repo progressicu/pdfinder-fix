@@ -2,6 +2,7 @@ package com.antkorwin.pdfinder;
 
 import java.io.File;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +18,7 @@ class PdfFindTest {
 		                                        .search("condition");
 
 		TextToken firstToken = result.getFirstToken().get();
-		assertThat(firstToken.getText()).contains("container or test based on certain conditions programmatically");
+		assertThat(firstToken.getText()).contains("conditions");
 		assertThat(firstToken.getPageNumber()).isEqualTo(23);
 
 		TextToken lastToken = result.getLastToken().get();
@@ -33,10 +34,18 @@ class PdfFindTest {
 		                                        .boundary(new Boundary(50, 750, 200, 50))
 		                                        .search("Assert");
 
-		assertThat(result.countOfTokens()).isEqualTo(1);
-		assertThat(result.getFirstToken().get().getText()).contains("Assert statistics for test events");
-		assertThat(result.getFirstToken().get().getPosition().getX()).isBetween(50f, 200f);
-		assertThat(result.getFirstToken().get().getPosition().getY()).isBetween(750f, 800f);
+		assertThat(result.countOfTokens()).isEqualTo(4);
+
+		result.getAllTokens().forEach(token -> {
+			assertThat(token.getPosition().getX()).isBetween(50f, 200f);
+			assertThat(token.getPosition().getY()).isBetween(750f, 800f);
+		});
+
+		assertThat(result.getAllTokens()).extracting(TextToken::getText)
+		                                 .containsExactly("Assertions",
+		                                                  "Asserting",
+		                                                  "Assert",
+		                                                  "Assertions");
 	}
 
 	@Test
@@ -70,7 +79,7 @@ class PdfFindTest {
 		                                        .caseSensitive(false)
 		                                        .search("Junit");
 		// Assert
-		assertThat(result.countOfTokens()).isEqualTo(810);
+		assertThat(result.countOfTokens()).isEqualTo(915);
 	}
 
 
@@ -99,18 +108,6 @@ class PdfFindTest {
 	}
 
 	@Test
-	void trimTabbbb() {
-		// Arrange
-		File file = loadFile("bad.pdf");
-		// Act
-		PdfFindResult result = new PdfFind(file).threshold(10)
-		                                        .caseSensitive(false)
-		                                        .search("Ю. Ковалык");
-		// Assert
-		System.out.println(result.countOfTokens());
-	}
-
-	@Test
 	void whiteSpaceTokenizerTest() {
 		// Arrange
 		File file = loadFile("spacing.pdf");
@@ -136,18 +133,51 @@ class PdfFindTest {
 		                                       .containsExactly(550.2544f, 655.3426f, 760.4307f, 760.4307f);
 	}
 
-	@Test
-	void extractingTest() {
-		// Arrange
-		File file = loadFile("tokenizer_with_spacing.pdf");
-		// Act
-		PdfFindResult result = new PdfFind(file).threshold(10)
-		                                        .caseSensitive(false)
-		                                        .search("space before");
-		// Assert
-		assertThat(result.getTokensFromPage(1)).hasSize(2)
-		                                       .extracting(t -> t.getPosition().getY())
-		                                       .containsOnly(760.4307f);
+
+	@Nested
+	class ExtractingTest {
+
+		@Test
+		void extractingTest() {
+			// Arrange
+			File file = loadFile("tokenizer_with_spacing.pdf");
+			// Act
+			PdfFindResult result = new PdfFind(file).threshold(10)
+			                                        .caseSensitive(false)
+			                                        .search("space before");
+			// Assert
+			assertThat(result.getTokensFromPage(1)).hasSize(2)
+			                                       .extracting(t -> t.getPosition().getY())
+			                                       .containsOnly(760.4307f);
+		}
+
+		@Test
+		void extractTokenInTheMiddle() {
+			// Arrange
+			File file = loadFile("tokenizer_with_spacing.pdf");
+			// Act
+			PdfFindResult result = new PdfFind(file).threshold(10)
+			                                        .caseSensitive(false)
+			                                        .search("and tabs");
+			// Assert
+			assertThat(result.getTokensFromPage(1)).hasSize(2)
+			                                       .extracting(t -> t.getPosition().getY())
+			                                       .containsOnly(655.3426f);
+		}
+
+		@Test
+		void extractTokenInTheEnd() {
+			// Arrange
+			File file = loadFile("tokenizer_with_spacing.pdf");
+			// Act
+			PdfFindResult result = new PdfFind(file).threshold(10)
+			                                        .caseSensitive(false)
+			                                        .search("after space");
+			// Assert
+			assertThat(result.getTokensFromPage(1)).hasSize(2)
+			                                       .extracting(t -> t.getPosition().getY())
+			                                       .containsOnly(550.2544f);
+		}
 	}
 
 	private File loadFile(String s) {
