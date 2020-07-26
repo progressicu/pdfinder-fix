@@ -5,7 +5,7 @@
 
     <groupId>com.antkorwin</groupId>
     <artifactId>pdfinder</artifactId>
-    <version>0.3</version>
+    <version>0.4</version>
     <packaging>jar</packaging>
 
     <name>PDFinder</name>
@@ -37,12 +37,8 @@
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
         <java.version>1.8</java.version>
         <junit-jupiter.version>5.6.2</junit-jupiter.version>
-
-        <tomcat.version>9.0.36</tomcat.version>
         <lombok.version>1.18.12</lombok.version>
-        <commons-fileupload.version>1.4</commons-fileupload.version>
         <commons-io.version>2.4</commons-io.version>
-        <better-strings.version>0.3</better-strings.version>
         <throwable-functions.version>1.2</throwable-functions.version>
     </properties>
 
@@ -135,6 +131,12 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
