@@ -4,9 +4,13 @@ import java.io.File;
 import java.util.List;
 
 import com.antkorwin.pdfinder.find.FlatSearch;
-import com.antkorwin.pdfinder.find.PdfSearch;
+import com.antkorwin.pdfinder.find.InBoundaryMatchTokenStrategy;
+import com.antkorwin.pdfinder.find.MatchTokenStrategy;
+import com.antkorwin.pdfinder.find.PdfExtractResult;
+import com.antkorwin.pdfinder.find.PdfSearchSequence;
 import com.antkorwin.pdfinder.find.PdfSplitResult;
 import com.antkorwin.pdfinder.tokenizer.SplitSubTokenStrategy;
+import com.antkorwin.pdfinder.tokenizer.SubToken;
 import com.antkorwin.pdfinder.tokenizer.WhiteSpaceSplitSubTokenStrategy;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
@@ -34,6 +38,7 @@ public class PdfFind {
 	private int threshold = DEFAULT_THRESHOLD;
 	private Boundary boundary;
 	private boolean caseSensitive = true;
+	private SplitSubTokenStrategy splitStrategy = new WhiteSpaceSplitSubTokenStrategy();
 
 	/**
 	 * the minimal distance between two text blocks,
@@ -62,6 +67,16 @@ public class PdfFind {
 	}
 
 	/**
+	 * Set the strategy of splitting tokens in PDF file,
+	 * by default using white-space split strategy: {@link WhiteSpaceSplitSubTokenStrategy}
+	 * which split words in a file by space or tab symbols
+	 */
+	public PdfFind splitStrategy(SplitSubTokenStrategy splitStrategy) {
+		this.splitStrategy = splitStrategy;
+		return this;
+	}
+
+	/**
 	 * search all text tokens matched to searchString
 	 */
 	public PdfFindResult search(String searchString) {
@@ -80,7 +95,7 @@ public class PdfFind {
 		PdfFindResult result = new PdfFindResult();
 		for (int pageNum = 1; pageNum <= pdfDoc.getNumberOfPages(); pageNum++) {
 			PdfPage page = pdfDoc.getPage(pageNum);
-			List<TextToken> tokensFromPage = getTokensFromPage(page, pageNum, searchString);
+			List<TextToken> tokensFromPage = searchInPage(page, pageNum, searchString);
 			if (tokensFromPage.size() > 0) {
 				result.addResultForPage(pageNum, tokensFromPage);
 			}
@@ -88,14 +103,21 @@ public class PdfFind {
 		return result;
 	}
 
-	private List<TextToken> getTokensFromPage(PdfPage page, int pageNumber, String searchString) {
+	private List<TextToken> searchInPage(PdfPage page, int pageNumber, String searchString) {
 
-		TextTokenSearchListener listener = new TextTokenSearchListener(pageNumber,
-		                                                               threshold);
+		PdfExtractResult extractResult = extractTokensFromPdf(page, pageNumber);
+		PdfSplitResult splitResult = new PdfSplitResult(extractResult, splitStrategy);
+
+		List<SubToken> searchTokens = splitStrategy.split(searchString);
+		MatchTokenStrategy matchTokenStrategy = new InBoundaryMatchTokenStrategy(caseSensitive, boundary);
+		PdfSearchSequence searchResult = new PdfSearchSequence(splitResult, searchTokens, matchTokenStrategy);
+
+		return new FlatSearch(searchResult).result();
+	}
+
+	private PdfExtractResult extractTokensFromPdf(PdfPage page, int pageNumber) {
+		TextTokenSearchListener listener = new TextTokenSearchListener(pageNumber, threshold);
 		new PdfCanvasProcessor(listener).processPageContent(page);
-		PdfSplitResult split = new PdfSplitResult(listener.getExtractResult(), new WhiteSpaceSplitSubTokenStrategy());
-		SplitSubTokenStrategy splitStrategy = new WhiteSpaceSplitSubTokenStrategy();
-		PdfSearch search = new PdfSearch(split, searchString, caseSensitive, boundary, splitStrategy);
-		return new FlatSearch(search).result();
+		return listener.getExtractResult();
 	}
 }
