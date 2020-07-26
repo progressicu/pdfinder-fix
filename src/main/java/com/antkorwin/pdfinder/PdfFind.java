@@ -96,7 +96,7 @@ public class PdfFind {
 		PdfFindResult result = new PdfFindResult();
 		for (int pageNum = 1; pageNum <= pdfDoc.getNumberOfPages(); pageNum++) {
 			PdfPage page = pdfDoc.getPage(pageNum);
-			List<TextToken> tokensFromPage = searchInPage(page, pageNum, searchString);
+			List<TextToken> tokensFromPage = searchOnPage(page, pageNum, searchString);
 			if (tokensFromPage.size() > 0) {
 				result.addResultForPage(pageNum, tokensFromPage);
 			}
@@ -104,7 +104,7 @@ public class PdfFind {
 		return result;
 	}
 
-	private List<TextToken> searchInPage(PdfPage page, int pageNumber, String searchString) {
+	private List<TextToken> searchOnPage(PdfPage page, int pageNumber, String searchString) {
 
 		PdfExtract extractResult = new PdfExtract(page, pageNumber, threshold);
 		PdfSplit splitResult = new PdfSplit(extractResult, splitStrategy);
