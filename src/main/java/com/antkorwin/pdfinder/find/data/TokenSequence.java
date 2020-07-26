@@ -41,7 +41,7 @@ public class TokenSequence {
 			}
 
 			if (!mismatch) {
-				for(int m =i; m<i+subSequence.size(); m++){
+				for (int m = i; m < i + subSequence.size(); m++) {
 					result.add(sequence.get(m));
 				}
 			}
