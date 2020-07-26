@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.antkorwin.pdfinder.TextToken;
 
-public interface OnePageResult {
+public interface SinglePageTokenData {
 
 	Map<Float, List<TextToken>> result();
 }

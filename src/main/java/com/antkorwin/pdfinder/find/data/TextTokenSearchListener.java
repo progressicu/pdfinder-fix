@@ -1,4 +1,4 @@
-package com.antkorwin.pdfinder;
+package com.antkorwin.pdfinder.find.data;
 
 
 import java.util.ArrayList;
@@ -9,7 +9,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.antkorwin.pdfinder.find.PdfExtractResult;
+import com.antkorwin.pdfinder.TextPosition;
+import com.antkorwin.pdfinder.TextToken;
+import com.antkorwin.pdfinder.find.SinglePageTokenData;
 import com.itextpdf.kernel.pdf.canvas.parser.EventType;
 import com.itextpdf.kernel.pdf.canvas.parser.data.IEventData;
 import com.itextpdf.kernel.pdf.canvas.parser.data.TextRenderInfo;
@@ -26,7 +28,8 @@ import static com.itextpdf.kernel.pdf.canvas.parser.EventType.RENDER_TEXT;
  * @author Korovin Anatoliy
  */
 @RequiredArgsConstructor
-public class TextTokenSearchListener implements IEventListener {
+public class TextTokenSearchListener implements IEventListener,
+                                                SinglePageTokenData {
 
 	private final int pageNumber;
 	private final int threshold;
@@ -79,10 +82,6 @@ public class TextTokenSearchListener implements IEventListener {
 		});
 	}
 
-	public PdfExtractResult getExtractResult() {
-		return new PdfExtractResult(() -> this.textTokenMap);
-	}
-
 	private List<TextToken> addNewToken(List<TextToken> tokens, TextToken token) {
 		tokens.add(token);
 		return tokens;
@@ -105,5 +104,11 @@ public class TextTokenSearchListener implements IEventListener {
 			return Optional.empty();
 		}
 		return Optional.of(tokens.get(tokens.size() - 1));
+	}
+
+
+	@Override
+	public Map<Float, List<TextToken>> result() {
+		return textTokenMap;
 	}
 }

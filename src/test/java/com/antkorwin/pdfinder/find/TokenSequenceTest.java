@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.antkorwin.pdfinder.TextToken;
+import com.antkorwin.pdfinder.find.data.TokenSequence;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
 

@@ -1,9 +1,10 @@
-package com.antkorwin.pdfinder.find;
+package com.antkorwin.pdfinder.find.data;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.antkorwin.pdfinder.TextToken;
+import com.antkorwin.pdfinder.find.SinglePageTokenData;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -14,18 +15,14 @@ import lombok.RequiredArgsConstructor;
  * @author Korovin Anatoliy
  */
 @RequiredArgsConstructor
-public class FlatSearch {
+public class PdfFindFlat {
 
-	private final OnePageResult originalData;
+	private final SinglePageTokenData originalData;
+
 
 	public List<TextToken> result() {
-
 		List<TextToken> result = new ArrayList<>();
-
-		originalData.result().forEach((k, v) -> {
-			result.addAll(v);
-		});
-
+		originalData.result().forEach((k, v) -> result.addAll(v));
 		return result;
 	}
 }

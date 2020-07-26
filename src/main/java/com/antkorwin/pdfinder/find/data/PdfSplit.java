@@ -1,4 +1,4 @@
-package com.antkorwin.pdfinder.find;
+package com.antkorwin.pdfinder.find.data;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,11 +7,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.antkorwin.pdfinder.TextPosition;
 import com.antkorwin.pdfinder.TextToken;
+import com.antkorwin.pdfinder.find.SinglePageTokenData;
 import com.antkorwin.pdfinder.tokenizer.SplitSubTokenStrategy;
 import com.antkorwin.pdfinder.tokenizer.SubToken;
-import com.antkorwin.pdfinder.tokenizer.WhiteSpaceSplitSubTokenStrategy;
 import com.itextpdf.kernel.font.PdfFont;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -22,9 +21,9 @@ import lombok.RequiredArgsConstructor;
  * @author Korovin Anatoliy
  */
 @RequiredArgsConstructor
-public class PdfSplitResult implements OnePageResult {
+public class PdfSplit implements SinglePageTokenData {
 
-	private final OnePageResult pdfExtractResult;
+	private final SinglePageTokenData pdfExtractResult;
 	private final SplitSubTokenStrategy splitTokenStrategy;
 
 	@Override

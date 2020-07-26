@@ -3,19 +3,20 @@ package com.antkorwin.pdfinder;
 import java.io.File;
 import java.util.List;
 
-import com.antkorwin.pdfinder.find.FlatSearch;
-import com.antkorwin.pdfinder.find.InBoundaryMatchTokenStrategy;
+import com.antkorwin.pdfinder.find.data.PdfFindFlat;
+import com.antkorwin.pdfinder.find.match.CaseSensitiveMatchTokenStrategy;
+import com.antkorwin.pdfinder.find.match.CompositeMatchTokenStrategy;
+import com.antkorwin.pdfinder.find.match.InBoundaryMatchTokenStrategy;
 import com.antkorwin.pdfinder.find.MatchTokenStrategy;
-import com.antkorwin.pdfinder.find.PdfExtractResult;
-import com.antkorwin.pdfinder.find.PdfSearchSequence;
-import com.antkorwin.pdfinder.find.PdfSplitResult;
+import com.antkorwin.pdfinder.find.data.PdfExtract;
+import com.antkorwin.pdfinder.find.data.PdfFindSequence;
+import com.antkorwin.pdfinder.find.data.PdfSplit;
 import com.antkorwin.pdfinder.tokenizer.SplitSubTokenStrategy;
 import com.antkorwin.pdfinder.tokenizer.SubToken;
 import com.antkorwin.pdfinder.tokenizer.WhiteSpaceSplitSubTokenStrategy;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfReader;
-import com.itextpdf.kernel.pdf.canvas.parser.PdfCanvasProcessor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -105,19 +106,15 @@ public class PdfFind {
 
 	private List<TextToken> searchInPage(PdfPage page, int pageNumber, String searchString) {
 
-		PdfExtractResult extractResult = extractTokensFromPdf(page, pageNumber);
-		PdfSplitResult splitResult = new PdfSplitResult(extractResult, splitStrategy);
+		PdfExtract extractResult = new PdfExtract(page, pageNumber, threshold);
+		PdfSplit splitResult = new PdfSplit(extractResult, splitStrategy);
 
 		List<SubToken> searchTokens = splitStrategy.split(searchString);
-		MatchTokenStrategy matchTokenStrategy = new InBoundaryMatchTokenStrategy(caseSensitive, boundary);
-		PdfSearchSequence searchResult = new PdfSearchSequence(splitResult, searchTokens, matchTokenStrategy);
+		MatchTokenStrategy matchTokenStrategy = new CompositeMatchTokenStrategy(new CaseSensitiveMatchTokenStrategy(caseSensitive),
+		                                                                        new InBoundaryMatchTokenStrategy(boundary));
 
-		return new FlatSearch(searchResult).result();
-	}
+		PdfFindSequence searchResult = new PdfFindSequence(splitResult, searchTokens, matchTokenStrategy);
 
-	private PdfExtractResult extractTokensFromPdf(PdfPage page, int pageNumber) {
-		TextTokenSearchListener listener = new TextTokenSearchListener(pageNumber, threshold);
-		new PdfCanvasProcessor(listener).processPageContent(page);
-		return listener.getExtractResult();
+		return new PdfFindFlat(searchResult).result();
 	}
 }

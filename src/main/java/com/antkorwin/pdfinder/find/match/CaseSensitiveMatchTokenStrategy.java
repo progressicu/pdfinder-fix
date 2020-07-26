@@ -1,22 +1,19 @@
-package com.antkorwin.pdfinder.find;
+package com.antkorwin.pdfinder.find.match;
 
-import com.antkorwin.pdfinder.Boundary;
 import com.antkorwin.pdfinder.TextToken;
+import com.antkorwin.pdfinder.find.MatchTokenStrategy;
 import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class InBoundaryMatchTokenStrategy implements MatchTokenStrategy {
+public class CaseSensitiveMatchTokenStrategy implements MatchTokenStrategy {
 
 	private final boolean caseSensitive;
-	private final Boundary boundary;
-
 
 	@Override
 	public boolean matchToken(TextToken token, String searchString) {
-		if (boundary != null) {
-			return match(token.getText(), searchString) &&
-			       boundary.isInBoundary(token.getPosition());
+		if (token.getText() == null || searchString == null) {
+			return false;
 		}
 		return match(token.getText(), searchString);
 	}

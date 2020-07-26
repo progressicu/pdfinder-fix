@@ -1,4 +1,4 @@
-package com.antkorwin.pdfinder.find;
+package com.antkorwin.pdfinder.find.data;
 
 import java.util.ArrayList;
 import java.util.List;

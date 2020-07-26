@@ -1,4 +1,4 @@
-package com.antkorwin.pdfinder.find;
+package com.antkorwin.pdfinder.find.data;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import com.antkorwin.pdfinder.TextToken;
+import com.antkorwin.pdfinder.find.SinglePageTokenData;
+import com.antkorwin.pdfinder.find.MatchTokenStrategy;
 import com.antkorwin.pdfinder.tokenizer.SubToken;
 import lombok.RequiredArgsConstructor;
 
@@ -18,9 +20,9 @@ import lombok.RequiredArgsConstructor;
  * @author Korovin Anatoliy
  */
 @RequiredArgsConstructor
-public class PdfSearchSequence implements OnePageResult {
+public class PdfFindSequence implements SinglePageTokenData {
 
-	private final OnePageResult originalData;
+	private final SinglePageTokenData originalData;
 	private final List<SubToken> searchTokens;
 	private final MatchTokenStrategy matchTokenStrategy;
 
