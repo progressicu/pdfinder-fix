@@ -5,7 +5,7 @@
 
     <groupId>com.antkorwin</groupId>
     <artifactId>pdfinder</artifactId>
-    <version>0.4</version>
+    <version>0.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>PDFinder</name>
@@ -73,6 +73,13 @@
             <artifactId>throwable-functions</artifactId>
             <version>${throwable-functions.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.antkorwin</groupId>
+            <artifactId>ioutils</artifactId>
+            <version>0.1</version>
+        </dependency>
+
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
