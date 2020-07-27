@@ -8,10 +8,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.antkorwin.pdfinder.TextPosition;
 import com.antkorwin.pdfinder.TextToken;
 import com.antkorwin.pdfinder.find.SinglePageTokenData;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.geom.LineSegment;
+import com.itextpdf.kernel.geom.Matrix;
+import com.itextpdf.kernel.geom.Vector;
 import com.itextpdf.kernel.pdf.canvas.parser.EventType;
 import com.itextpdf.kernel.pdf.canvas.parser.data.IEventData;
 import com.itextpdf.kernel.pdf.canvas.parser.data.TextRenderInfo;
@@ -59,6 +64,7 @@ public class TextTokenSearchListener implements IEventListener,
 			                              .pageNumber(pageNumber)
 			                              .font(info.getFont())
 			                              .fontSize(info.getFontSize())
+			                              .fontMatrix(matrix(info))
 			                              .build();
 
 			if (tokens == null) {
@@ -67,11 +73,17 @@ public class TextTokenSearchListener implements IEventListener,
 			}
 
 			Optional<TextToken> lastToken = getLastToken(tokens);
-			if (lastToken.isPresent() && getDistanceBetween(lastToken.get(), newToken) < threshold) {
+			if (lastToken.isPresent() &&
+			    lastToken.get().getFont().equals(newToken.getFont()) &&
+			    getDistanceBetween(lastToken.get(), newToken) < threshold) {
 
 				TextToken last = lastToken.get();
 				last.setText(last.getText() + text);
-				last.getPosition().setWidth(last.getPosition().getWidth() + textPosition.getWidth());
+				float distance = getDistanceBetween(lastToken.get(), newToken);
+				last.getPosition().setWidth(last.getPosition().getWidth() +
+				                            textPosition.getWidth() +
+				                            distance);
+
 				last.getPosition().setHeight(last.getPosition().getHeight() + textPosition.getHeight());
 			} else {
 				addNewToken(tokens, newToken);
@@ -80,6 +92,11 @@ public class TextTokenSearchListener implements IEventListener,
 
 			return tokens;
 		});
+	}
+
+	private Matrix matrix(TextRenderInfo textRenderInfo) {
+		return textRenderInfo.getTextMatrix()
+		                     .multiply(textRenderInfo.getGraphicsState().getCtm());
 	}
 
 	private List<TextToken> addNewToken(List<TextToken> tokens, TextToken token) {

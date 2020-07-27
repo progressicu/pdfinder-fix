@@ -11,6 +11,10 @@ import com.antkorwin.pdfinder.find.SinglePageTokenData;
 import com.antkorwin.pdfinder.tokenizer.SplitSubTokenStrategy;
 import com.antkorwin.pdfinder.tokenizer.SubToken;
 import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.geom.LineSegment;
+import com.itextpdf.kernel.geom.Matrix;
+import com.itextpdf.kernel.geom.Vector;
+import com.itextpdf.kernel.pdf.canvas.parser.data.TextRenderInfo;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -60,7 +64,10 @@ public class PdfSplit implements SinglePageTokenData {
 		subTokens.forEach(t -> {
 
 			float width = font.getWidth(t.getToken(), fontSize);
+			width = getUserWidth(width, originalToken.getFontMatrix());
+
 			float offset = font.getWidth(text.substring(0, t.getStartIndex()), fontSize);
+			offset = getUserWidth(offset, originalToken.getFontMatrix());
 
 			TextPosition position = TextPosition.builder()
 			                                    .x(startPosition.getX() + offset)
@@ -81,5 +88,11 @@ public class PdfSplit implements SinglePageTokenData {
 		});
 
 		return result;
+	}
+
+	private float getUserWidth(float width, Matrix fontMatrix) {
+		LineSegment textSpace = new LineSegment(new Vector(0, 0, 1), new Vector(width, 0, 1));
+		LineSegment userSpace = textSpace.transformBy(fontMatrix);
+		return userSpace.getLength();
 	}
 }

@@ -11,6 +11,7 @@ import com.antkorwin.pdfinder.find.MatchTokenStrategy;
 import com.antkorwin.pdfinder.find.data.PdfExtract;
 import com.antkorwin.pdfinder.find.data.PdfFindSequence;
 import com.antkorwin.pdfinder.find.data.PdfSplit;
+import com.antkorwin.pdfinder.tokenizer.SearchPhraseSplitSubTokenStrategy;
 import com.antkorwin.pdfinder.tokenizer.SplitSubTokenStrategy;
 import com.antkorwin.pdfinder.tokenizer.SubToken;
 import com.antkorwin.pdfinder.tokenizer.WhiteSpaceSplitSubTokenStrategy;
@@ -109,12 +110,12 @@ public class PdfFind {
 		PdfExtract extractResult = new PdfExtract(page, pageNumber, threshold);
 		PdfSplit splitResult = new PdfSplit(extractResult, splitStrategy);
 
-		List<SubToken> searchTokens = splitStrategy.split(searchString);
+		// todo: move this strategy in external dependencies of class:
+		List<SubToken> searchTokens = new SearchPhraseSplitSubTokenStrategy().split(searchString);
 		MatchTokenStrategy matchTokenStrategy = new CompositeMatchTokenStrategy(new CaseSensitiveMatchTokenStrategy(caseSensitive),
 		                                                                        new InBoundaryMatchTokenStrategy(boundary));
 
 		PdfFindSequence searchResult = new PdfFindSequence(splitResult, searchTokens, matchTokenStrategy);
-
 		return new PdfFindFlat(searchResult).result();
 	}
 }

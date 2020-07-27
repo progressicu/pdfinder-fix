@@ -2,6 +2,7 @@ package com.antkorwin.pdfinder;
 
 
 import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.geom.Matrix;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,4 +27,5 @@ public class TextToken {
 
 	private PdfFont font;
 	private float fontSize;
+	private Matrix fontMatrix;
 }

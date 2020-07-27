@@ -1,7 +1,16 @@
 package com.antkorwin.pdfinder;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
+import com.antkorwin.ioutils.TempFile;
+import com.itextpdf.kernel.colors.DeviceCmyk;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfPage;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -84,7 +93,7 @@ class PdfFindTest {
 
 
 	@Test
-	void trimSpaceInTokens() {
+	void trimSpaceInTokens() throws IOException {
 		// Arrange
 		File file = loadFile("space2.pdf");
 		// Act
@@ -93,10 +102,31 @@ class PdfFindTest {
 		                                        .search("Конец");
 		// Assert
 		System.out.println(result.getTokensByPageMap());
+
+		TextPosition position = result.getFirstToken().get().getPosition();
+
+		File tempFile = TempFile.create();
+		PdfWriter writer = new PdfWriter(tempFile);
+		PdfReader reader = new PdfReader(file);
+		PdfDocument document = new PdfDocument(reader, writer);
+
+		PdfPage page = document.getPage(1);
+		PdfCanvas canvas = new PdfCanvas(page);
+		canvas.setStrokeColor(DeviceCmyk.BLACK)
+		      .setLineWidth(1)
+		      .moveTo(position.getLeft(), position.getTop()+14)
+		      .lineTo(position.getRight(), position.getTop()+14)
+		      .lineTo(position.getRight(), position.getBottom())
+		      .lineTo(position.getLeft(), position.getBottom())
+		      .closePathStroke();
+
+		document.close();
+
+		System.out.println(tempFile.getName());
 	}
 
 	@Test
-	void trimTabsInTokens() {
+	void trimTabsInTokens() throws IOException {
 		// Arrange
 		File file = loadFile("space-test.pdf");
 		// Act
@@ -105,7 +135,65 @@ class PdfFindTest {
 		                                        .search("space");
 		// Assert
 		System.out.println(result.getTokensByPageMap());
+
+		File tempFile = TempFile.create();
+		PdfWriter writer = new PdfWriter(tempFile);
+		PdfReader reader = new PdfReader(file);
+		PdfDocument document = new PdfDocument(reader, writer);
+		PdfPage page = document.getPage(1);
+		PdfCanvas canvas = new PdfCanvas(page);
+
+		for(TextToken token : result.getAllTokens()){
+			TextPosition position = token.getPosition();
+			canvas.setStrokeColor(DeviceCmyk.BLACK)
+			      .setLineWidth(1)
+			      .moveTo(position.getLeft(), position.getTop()+14)
+			      .lineTo(position.getRight(), position.getTop()+14)
+			      .lineTo(position.getRight(), position.getBottom())
+			      .lineTo(position.getLeft(), position.getBottom())
+			      .closePathStroke();
+		}
+
+		document.close();
+
+		System.out.println(tempFile.getName());
 	}
+
+	@Test
+	void trimTabsInTokens__RE() throws IOException {
+		// Arrange
+		File file = loadFile("rus_eng.pdf");
+		// Act
+		PdfFindResult result = new PdfFind(file).threshold(10)
+		                                        .caseSensitive(false)
+		                                        .search("строки");
+		// Assert
+		System.out.println(result.getTokensByPageMap());
+
+		File tempFile = TempFile.create();
+		PdfWriter writer = new PdfWriter(tempFile);
+		PdfReader reader = new PdfReader(file);
+		PdfDocument document = new PdfDocument(reader, writer);
+		PdfPage page = document.getPage(1);
+		PdfCanvas canvas = new PdfCanvas(page);
+
+		for(TextToken token : result.getAllTokens()){
+			TextPosition position = token.getPosition();
+			canvas.setStrokeColor(DeviceCmyk.BLACK)
+			      .setLineWidth(1)
+			      .moveTo(position.getLeft(), position.getTop()+14)
+			      .lineTo(position.getRight(), position.getTop()+14)
+			      .lineTo(position.getRight(), position.getBottom())
+			      .lineTo(position.getLeft(), position.getBottom())
+			      .closePathStroke();
+		}
+
+		document.close();
+
+		System.out.println(tempFile.getName());
+	}
+
+
 
 	@Test
 	void whiteSpaceTokenizerTest() {
