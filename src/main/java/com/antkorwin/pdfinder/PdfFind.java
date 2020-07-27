@@ -110,14 +110,12 @@ public class PdfFind {
 		PdfExtract extractResult = new PdfExtract(page, pageNumber, threshold);
 		PdfSplit splitResult = new PdfSplit(extractResult, splitStrategy);
 
-//		List<SubToken> searchTokens = splitStrategy.split(searchString);
+		// todo: move this strategy in external dependencies of class:
 		List<SubToken> searchTokens = new SearchPhraseSplitSubTokenStrategy().split(searchString);
-
 		MatchTokenStrategy matchTokenStrategy = new CompositeMatchTokenStrategy(new CaseSensitiveMatchTokenStrategy(caseSensitive),
 		                                                                        new InBoundaryMatchTokenStrategy(boundary));
 
 		PdfFindSequence searchResult = new PdfFindSequence(splitResult, searchTokens, matchTokenStrategy);
-
 		return new PdfFindFlat(searchResult).result();
 	}
 }
