@@ -42,9 +42,6 @@ public class TextTokenSearchListener implements IEventListener,
 	@Getter
 	private Map<Float, List<TextToken>> textTokenMap = new HashMap<>();
 
-//	public static Map<PdfFont, Map<String, Float>> glyphSizeMap = new ConcurrentHashMap<>();
-
-
 	@Override
 	public Set<EventType> getSupportedEvents() {
 		HashSet<EventType> types = new HashSet<>();
@@ -58,17 +55,6 @@ public class TextTokenSearchListener implements IEventListener,
 		TextRenderInfo info = (TextRenderInfo) iEventData;
 		String text = info.getText();
 		TextPosition textPosition = TextPosition.fromRenderInfo(info);
-
-//		glyphSizeMap.compute(info.getFont(), (font, oldMap) -> {
-//			if (oldMap == null) {
-//				ConcurrentHashMap<String, Float> glyphWidth = new ConcurrentHashMap<>();
-//				glyphWidth.put(text, textPosition.getWidth());
-//				return glyphWidth;
-//			} else {
-//				oldMap.computeIfAbsent(text, key -> textPosition.getWidth());
-//				return oldMap;
-//			}
-//		});
 
 		textTokenMap.compute(textPosition.getY(), (lineY, tokens) -> {
 
