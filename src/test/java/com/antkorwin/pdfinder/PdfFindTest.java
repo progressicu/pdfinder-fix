@@ -126,6 +126,41 @@ class PdfFindTest {
 	}
 
 	@Test
+	void trimSpaceInTokens_preprod() throws IOException {
+		// Arrange
+		File file = loadFile("bad_1c.pdf");
+		// Act
+		PdfFindResult result = new PdfFind(file).threshold(40)
+		                                        .caseSensitive(false)
+		                                        .search("А.Ю. Ковалык");
+		// Assert
+		System.out.println(result.getTokensByPageMap());
+
+		TextPosition position = result.getFirstToken().get().getPosition();
+
+		File tempFile = TempFile.create();
+		PdfWriter writer = new PdfWriter(tempFile);
+		PdfReader reader = new PdfReader(file);
+		PdfDocument document = new PdfDocument(reader, writer);
+
+		PdfPage page = document.getPage(1);
+		PdfCanvas canvas = new PdfCanvas(page);
+		canvas.setStrokeColor(DeviceCmyk.BLACK)
+		      .setLineWidth(1)
+		      .moveTo(position.getLeft(), position.getTop()+14)
+		      .lineTo(position.getRight(), position.getTop()+14)
+		      .lineTo(position.getRight(), position.getBottom())
+		      .lineTo(position.getLeft(), position.getBottom())
+		      .closePathStroke();
+
+		document.close();
+
+		System.out.println(tempFile.getName());
+	}
+
+
+
+	@Test
 	void trimTabsInTokens() throws IOException {
 		// Arrange
 		File file = loadFile("space-test.pdf");

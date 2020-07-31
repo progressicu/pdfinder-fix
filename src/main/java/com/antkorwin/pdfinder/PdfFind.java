@@ -1,16 +1,18 @@
 package com.antkorwin.pdfinder;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import com.antkorwin.pdfinder.find.MatchTokenStrategy;
+import com.antkorwin.pdfinder.find.data.PdfExtract;
 import com.antkorwin.pdfinder.find.data.PdfFindFlat;
+import com.antkorwin.pdfinder.find.data.PdfFindSequence;
+import com.antkorwin.pdfinder.find.data.PdfSplit;
 import com.antkorwin.pdfinder.find.match.CaseSensitiveMatchTokenStrategy;
 import com.antkorwin.pdfinder.find.match.CompositeMatchTokenStrategy;
 import com.antkorwin.pdfinder.find.match.InBoundaryMatchTokenStrategy;
-import com.antkorwin.pdfinder.find.MatchTokenStrategy;
-import com.antkorwin.pdfinder.find.data.PdfExtract;
-import com.antkorwin.pdfinder.find.data.PdfFindSequence;
-import com.antkorwin.pdfinder.find.data.PdfSplit;
 import com.antkorwin.pdfinder.tokenizer.SearchPhraseSplitSubTokenStrategy;
 import com.antkorwin.pdfinder.tokenizer.SplitSubTokenStrategy;
 import com.antkorwin.pdfinder.tokenizer.SubToken;
@@ -41,6 +43,10 @@ public class PdfFind {
 	private Boundary boundary;
 	private boolean caseSensitive = true;
 	private SplitSubTokenStrategy splitStrategy = new WhiteSpaceSplitSubTokenStrategy();
+
+	// todo: move this strategy in external dependencies of class:
+	private List<SplitSubTokenStrategy> splitSubTokenStrategies = Arrays.asList(new WhiteSpaceSplitSubTokenStrategy(),
+	                                                                            new SearchPhraseSplitSubTokenStrategy());
 
 	/**
 	 * the minimal distance between two text blocks,
@@ -110,12 +116,14 @@ public class PdfFind {
 		PdfExtract extractResult = new PdfExtract(page, pageNumber, threshold);
 		PdfSplit splitResult = new PdfSplit(extractResult, splitStrategy);
 
-		// todo: move this strategy in external dependencies of class:
-		List<SubToken> searchTokens = new SearchPhraseSplitSubTokenStrategy().split(searchString);
 		MatchTokenStrategy matchTokenStrategy = new CompositeMatchTokenStrategy(new CaseSensitiveMatchTokenStrategy(caseSensitive),
 		                                                                        new InBoundaryMatchTokenStrategy(boundary));
-
-		PdfFindSequence searchResult = new PdfFindSequence(splitResult, searchTokens, matchTokenStrategy);
-		return new PdfFindFlat(searchResult).result();
+		List<TextToken> result = new ArrayList<>();
+		for (SplitSubTokenStrategy strategy : splitSubTokenStrategies) {
+			List<SubToken> searchTokens = strategy.split(searchString);
+			PdfFindSequence searchResult = new PdfFindSequence(splitResult, searchTokens, matchTokenStrategy);
+			result.addAll(new PdfFindFlat(searchResult).result());
+		}
+		return result;
 	}
 }
