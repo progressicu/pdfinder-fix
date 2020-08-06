@@ -89,7 +89,7 @@ public class PdfFind {
 	}
 
 	/**
-	 * Set the list of strategy to split a search phrase on tokens
+	 * Set the list of strategies to split a search phrase on tokens
 	 */
 	public PdfFind searchPhraseSplitStrategies(List<SplitSubTokenStrategy> splitStrategies) {
 		this.searchPhraseSplitStrategies = splitStrategies;
