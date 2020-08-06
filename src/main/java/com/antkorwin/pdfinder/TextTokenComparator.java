@@ -5,7 +5,9 @@ import java.util.Comparator;
 /**
  * Created on 06/08/2020
  * <p>
- * TODO: replace on the JavaDoc
+ * Compare two {@link TextToken}, to sort by positions.
+ * From the top of pdf page to the bottom,
+ * and from the left to the right of page(on the same row).
  *
  * @author Korovin Anatoliy
  */
