@@ -125,7 +125,7 @@ class PdfFindTest {
 	}
 
 	@Test
-	void trimSpaceInTokens_preprod() throws IOException {
+	void splitSearchPhraseByMultipleStrategies() throws IOException {
 		// Arrange
 		File file = loadFile("test.pdf");
 		// Act
