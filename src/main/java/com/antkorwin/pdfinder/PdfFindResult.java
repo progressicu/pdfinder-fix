@@ -45,7 +45,7 @@ public class PdfFindResult {
 		}
 
 		List<TextToken> tokensFromFirstPage = tokensByPageMap.get(firstPageWithToken.get());
-		return Optional.of(tokensFromFirstPage.get(tokensFromFirstPage.size() - 1));
+		return Optional.of(tokensFromFirstPage.get(0));
 	}
 
 	/**

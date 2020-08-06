@@ -1,16 +1,22 @@
 package com.antkorwin.pdfinder;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.antkorwin.pdfinder.find.MatchTokenStrategy;
+import com.antkorwin.pdfinder.find.data.PdfExtract;
 import com.antkorwin.pdfinder.find.data.PdfFindFlat;
+import com.antkorwin.pdfinder.find.data.PdfFindSequence;
+import com.antkorwin.pdfinder.find.data.PdfSplit;
 import com.antkorwin.pdfinder.find.match.CaseSensitiveMatchTokenStrategy;
 import com.antkorwin.pdfinder.find.match.CompositeMatchTokenStrategy;
 import com.antkorwin.pdfinder.find.match.InBoundaryMatchTokenStrategy;
-import com.antkorwin.pdfinder.find.MatchTokenStrategy;
-import com.antkorwin.pdfinder.find.data.PdfExtract;
-import com.antkorwin.pdfinder.find.data.PdfFindSequence;
-import com.antkorwin.pdfinder.find.data.PdfSplit;
 import com.antkorwin.pdfinder.tokenizer.SearchPhraseSplitSubTokenStrategy;
 import com.antkorwin.pdfinder.tokenizer.SplitSubTokenStrategy;
 import com.antkorwin.pdfinder.tokenizer.SubToken;
@@ -40,7 +46,11 @@ public class PdfFind {
 	private int threshold = DEFAULT_THRESHOLD;
 	private Boundary boundary;
 	private boolean caseSensitive = true;
-	private SplitSubTokenStrategy splitStrategy = new WhiteSpaceSplitSubTokenStrategy();
+
+	private SplitSubTokenStrategy textSplitStrategy = new WhiteSpaceSplitSubTokenStrategy();
+
+	private List<SplitSubTokenStrategy> searchPhraseSplitStrategies = Arrays.asList(new WhiteSpaceSplitSubTokenStrategy(),
+	                                                                                new SearchPhraseSplitSubTokenStrategy());
 
 	/**
 	 * the minimal distance between two text blocks,
@@ -73,8 +83,16 @@ public class PdfFind {
 	 * by default using white-space split strategy: {@link WhiteSpaceSplitSubTokenStrategy}
 	 * which split words in a file by space or tab symbols
 	 */
-	public PdfFind splitStrategy(SplitSubTokenStrategy splitStrategy) {
-		this.splitStrategy = splitStrategy;
+	public PdfFind textSplitStrategy(SplitSubTokenStrategy splitStrategy) {
+		this.textSplitStrategy = splitStrategy;
+		return this;
+	}
+
+	/**
+	 * Set the list of strategies to split a search phrase on tokens
+	 */
+	public PdfFind searchPhraseSplitStrategies(List<SplitSubTokenStrategy> splitStrategies) {
+		this.searchPhraseSplitStrategies = splitStrategies;
 		return this;
 	}
 
@@ -108,14 +126,22 @@ public class PdfFind {
 	private List<TextToken> searchOnPage(PdfPage page, int pageNumber, String searchString) {
 
 		PdfExtract extractResult = new PdfExtract(page, pageNumber, threshold);
-		PdfSplit splitResult = new PdfSplit(extractResult, splitStrategy);
+		PdfSplit splitResult = new PdfSplit(extractResult, textSplitStrategy);
 
-		// todo: move this strategy in external dependencies of class:
-		List<SubToken> searchTokens = new SearchPhraseSplitSubTokenStrategy().split(searchString);
 		MatchTokenStrategy matchTokenStrategy = new CompositeMatchTokenStrategy(new CaseSensitiveMatchTokenStrategy(caseSensitive),
 		                                                                        new InBoundaryMatchTokenStrategy(boundary));
+		Set<TextToken> result = new HashSet<>();
+		for (SplitSubTokenStrategy strategy : searchPhraseSplitStrategies) {
+			List<SubToken> searchTokens = strategy.split(searchString);
+			PdfFindSequence searchResult = new PdfFindSequence(splitResult, searchTokens, matchTokenStrategy);
+			result.addAll(new PdfFindFlat(searchResult).result());
+		}
+		return toSortedList(result);
+	}
 
-		PdfFindSequence searchResult = new PdfFindSequence(splitResult, searchTokens, matchTokenStrategy);
-		return new PdfFindFlat(searchResult).result();
+	private List<TextToken> toSortedList(Set<TextToken> tokenSet){
+		return new ArrayList<>(tokenSet).stream()
+		                                .sorted(new TextTokenComparator())
+		                                .collect(Collectors.toList());
 	}
 }

@@ -1,7 +1,6 @@
 package com.antkorwin.pdfinder;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import com.antkorwin.ioutils.TempFile;
@@ -114,8 +113,8 @@ class PdfFindTest {
 		PdfCanvas canvas = new PdfCanvas(page);
 		canvas.setStrokeColor(DeviceCmyk.BLACK)
 		      .setLineWidth(1)
-		      .moveTo(position.getLeft(), position.getTop()+14)
-		      .lineTo(position.getRight(), position.getTop()+14)
+		      .moveTo(position.getLeft(), position.getTop() + 14)
+		      .lineTo(position.getRight(), position.getTop() + 14)
 		      .lineTo(position.getRight(), position.getBottom())
 		      .lineTo(position.getLeft(), position.getBottom())
 		      .closePathStroke();
@@ -124,6 +123,29 @@ class PdfFindTest {
 
 		System.out.println(tempFile.getName());
 	}
+
+	@Test
+	void splitSearchPhraseByMultipleStrategies() throws IOException {
+		// Arrange
+		File file = loadFile("test.pdf");
+		// Act
+		PdfFindResult result = new PdfFind(file).threshold(40)
+		                                        .caseSensitive(false)
+		                                        .search("Т.Т. Тест");
+		// Assert
+		TextToken firstToken = result.getAllTokens().get(0);
+		assertThat(firstToken).extracting(t -> t.getText(),
+		                               t -> t.getPosition().getLeft(),
+		                               t -> t.getPosition().getTop())
+		                   .contains("Т.Т.", 414.17f, 420.84f);
+
+		TextToken secondToken = result.getAllTokens().get(1);
+		assertThat(secondToken).extracting(t -> t.getText(),
+		                               t -> t.getPosition().getLeft(),
+		                               t -> t.getPosition().getTop())
+		                   .contains("Тест", 435.962f, 420.84f);
+	}
+
 
 	@Test
 	void trimTabsInTokens() throws IOException {
@@ -143,12 +165,12 @@ class PdfFindTest {
 		PdfPage page = document.getPage(1);
 		PdfCanvas canvas = new PdfCanvas(page);
 
-		for(TextToken token : result.getAllTokens()){
+		for (TextToken token : result.getAllTokens()) {
 			TextPosition position = token.getPosition();
 			canvas.setStrokeColor(DeviceCmyk.BLACK)
 			      .setLineWidth(1)
-			      .moveTo(position.getLeft(), position.getTop()+14)
-			      .lineTo(position.getRight(), position.getTop()+14)
+			      .moveTo(position.getLeft(), position.getTop() + 14)
+			      .lineTo(position.getRight(), position.getTop() + 14)
 			      .lineTo(position.getRight(), position.getBottom())
 			      .lineTo(position.getLeft(), position.getBottom())
 			      .closePathStroke();
@@ -177,12 +199,12 @@ class PdfFindTest {
 		PdfPage page = document.getPage(1);
 		PdfCanvas canvas = new PdfCanvas(page);
 
-		for(TextToken token : result.getAllTokens()){
+		for (TextToken token : result.getAllTokens()) {
 			TextPosition position = token.getPosition();
 			canvas.setStrokeColor(DeviceCmyk.BLACK)
 			      .setLineWidth(1)
-			      .moveTo(position.getLeft(), position.getTop()+14)
-			      .lineTo(position.getRight(), position.getTop()+14)
+			      .moveTo(position.getLeft(), position.getTop() + 14)
+			      .lineTo(position.getRight(), position.getTop() + 14)
 			      .lineTo(position.getRight(), position.getBottom())
 			      .lineTo(position.getLeft(), position.getBottom())
 			      .closePathStroke();
@@ -192,7 +214,6 @@ class PdfFindTest {
 
 		System.out.println(tempFile.getName());
 	}
-
 
 
 	@Test
@@ -218,7 +239,7 @@ class PdfFindTest {
 		// Assert
 		assertThat(result.getTokensFromPage(1)).hasSize(4)
 		                                       .extracting(t -> t.getPosition().getY())
-		                                       .containsExactly(550.2544f, 655.3426f, 760.4307f, 760.4307f);
+		                                       .containsExactly(760.4307f, 760.4307f, 655.3426f, 550.2544f);
 	}
 
 

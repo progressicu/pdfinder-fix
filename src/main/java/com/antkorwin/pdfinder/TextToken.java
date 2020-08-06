@@ -1,6 +1,8 @@
 package com.antkorwin.pdfinder;
 
 
+import java.util.Objects;
+
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.geom.Matrix;
 import lombok.AccessLevel;
@@ -28,4 +30,20 @@ public class TextToken {
 	private PdfFont font;
 	private float fontSize;
 	private Matrix fontMatrix;
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) { return true; }
+		if (o == null || getClass() != o.getClass()) { return false; }
+		TextToken token = (TextToken) o;
+		return Float.compare(token.fontSize, fontSize) == 0 &&
+		       Objects.equals(text, token.text) &&
+		       Objects.equals(position, token.position) &&
+		       Objects.equals(pageNumber, token.pageNumber);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(text, position, pageNumber, fontSize);
+	}
 }

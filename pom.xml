@@ -5,7 +5,7 @@
 
     <groupId>com.antkorwin</groupId>
     <artifactId>pdfinder</artifactId>
-    <version>0.5</version>
+    <version>0.6</version>
     <packaging>jar</packaging>
 
     <name>PDFinder</name>
