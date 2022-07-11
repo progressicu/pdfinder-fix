@@ -35,6 +35,16 @@ public class TextPosition {
 		                        Math.abs(yEnd - yStart));
 	}
 
+	public static TextPosition fromEndRenderInfo(TextRenderInfo textRenderInfo) {
+		float xEnd = textRenderInfo.getBaseline().getEndPoint().get(Vector.I1);
+		float yStart = textRenderInfo.getBaseline().getStartPoint().get(Vector.I2);
+		float yEnd = textRenderInfo.getBaseline().getEndPoint().get(Vector.I2);
+		return new TextPosition(xEnd,
+		                        yStart,
+		                        0,
+		                        Math.abs(yEnd - yStart));
+	}
+
 	public float getLeft() {
 		return x;
 	}

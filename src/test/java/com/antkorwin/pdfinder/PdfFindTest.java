@@ -96,7 +96,7 @@ class PdfFindTest {
 		// Arrange
 		File file = loadFile("space2.pdf");
 		// Act
-		PdfFindResult result = new PdfFind(file).threshold(10)
+		PdfFindResult result = new PdfFind(file).threshold(1)
 		                                        .caseSensitive(false)
 		                                        .search("Конец");
 		// Assert
@@ -143,7 +143,7 @@ class PdfFindTest {
 		assertThat(secondToken).extracting(t -> t.getText(),
 		                               t -> t.getPosition().getLeft(),
 		                               t -> t.getPosition().getTop())
-		                   .contains("Тест", 435.962f, 420.84f);
+		                   .contains("Тест", 433.34598f, 420.84f);
 	}
 
 

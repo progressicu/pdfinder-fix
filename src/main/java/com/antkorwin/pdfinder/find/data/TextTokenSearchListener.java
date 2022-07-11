@@ -8,15 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.antkorwin.pdfinder.TextPosition;
 import com.antkorwin.pdfinder.TextToken;
 import com.antkorwin.pdfinder.find.SinglePageTokenData;
-import com.itextpdf.kernel.font.PdfFont;
-import com.itextpdf.kernel.geom.LineSegment;
 import com.itextpdf.kernel.geom.Matrix;
-import com.itextpdf.kernel.geom.Vector;
 import com.itextpdf.kernel.pdf.canvas.parser.EventType;
 import com.itextpdf.kernel.pdf.canvas.parser.data.IEventData;
 import com.itextpdf.kernel.pdf.canvas.parser.data.TextRenderInfo;
@@ -59,7 +55,7 @@ public class TextTokenSearchListener implements IEventListener,
 		textTokenMap.compute(textPosition.getY(), (lineY, tokens) -> {
 
 			TextToken newToken = TextToken.builder()
-			                              .text(text)
+			                              .text(text.trim())
 			                              .position(textPosition)
 			                              .pageNumber(pageNumber)
 			                              .font(info.getFont())
@@ -74,17 +70,28 @@ public class TextTokenSearchListener implements IEventListener,
 
 			Optional<TextToken> lastToken = getLastToken(tokens);
 			if (lastToken.isPresent() &&
-			    lastToken.get().getFont().equals(newToken.getFont()) &&
-			    getDistanceBetween(lastToken.get(), newToken) < threshold) {
+				compareFontAndSize(lastToken.get(), newToken) &&
+				getDistanceBetween(lastToken.get(), newToken) < threshold &&
+				!text.startsWith(" ")) {
 
 				TextToken last = lastToken.get();
-				last.setText(last.getText() + text);
-				float distance = getDistanceBetween(lastToken.get(), newToken);
+				last.setText(last.getText() + text.trim());
 				last.getPosition().setWidth(last.getPosition().getWidth() +
-				                            textPosition.getWidth() +
-				                            distance);
+				                            textPosition.getWidth());
 
 				last.getPosition().setHeight(last.getPosition().getHeight() + textPosition.getHeight());
+
+				if (text.endsWith(" ")) {
+					addNewToken(tokens, TextToken.builder()
+												 .text("")
+												 .position(TextPosition.fromEndRenderInfo(info))
+												 .pageNumber(pageNumber)
+												 .font(info.getFont())
+												 .fontSize(info.getFontSize())
+												 .fontMatrix(matrix(info))
+												 .build());
+					return tokens;
+				}
 			} else {
 				addNewToken(tokens, newToken);
 				return tokens;
@@ -92,6 +99,15 @@ public class TextTokenSearchListener implements IEventListener,
 
 			return tokens;
 		});
+	}
+
+	private boolean compareFontAndSize(TextToken lastToken, TextToken newToken) {
+		return getFontName(lastToken).equals(getFontName(newToken)) &&
+			   lastToken.getFontSize() == newToken.getFontSize();
+	}
+
+	private String getFontName(TextToken token){
+		return token.getFont().getFontProgram().getFontNames().getFontName();
 	}
 
 	private Matrix matrix(TextRenderInfo textRenderInfo) {
@@ -104,7 +120,6 @@ public class TextTokenSearchListener implements IEventListener,
 		return tokens;
 	}
 
-	// todo check the same font and size ?
 	private float getDistanceBetween(TextToken firstToken, TextToken secondToken) {
 
 		if (firstToken.getPosition().getLeft() > secondToken.getPosition().getLeft()) {
